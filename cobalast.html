@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Belajar Interaktif dengan Timer</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      padding: 20px;
+      background: linear-gradient(to right, #6dd5ed, #2193b0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 2px solid #2193b0;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 25px;
+      border: none;
+      background-color: #2193b0;
+      color: white;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #176c8c;
+    }
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    #timer {
+      font-size: 18px;
+      color: red;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <h2>Selamat datang!</h2>
+  <p>Masukkan nama kamu untuk memulai kuis:</p>
+  <input type="text" id="nameInput" placeholder="Nama lengkap" />
+  <br>
+  <button onclick="startQuiz()">Mulai Kuis</button>
+</div>
+
+<audio id="benar-audio" src="audio/correct-answer.mp3"></audio>
+<audio id="salah-audio" src="audio/wrong-answer.mp3"></audio>
+
+<script>
+const questions = [
+  { question: "Apa ibu kota Indonesia?", answer: "Jakarta" },
+  { question: "Apa gunung tertinggi di Indonesia?", answer: "Puncak Jaya" },
+  { question: "Siapa proklamator kemerdekaan Indonesia?", answer: "Soekarno" },
+  { question: "Apa semboyan negara Indonesia?", answer: "Bhinneka Tunggal Ika" },
+  { question: "Tanggal berapa Indonesia merdeka?", answer: "17 Agustus 1945" }
+];
+
+let currentQuestion = 0;
+let score = 0;
+let timeLeft = 15;
+let timerInterval;
+let userName = "";
+
+const benarAudio = document.getElementById("benar-audio");
+const salahAudio = document.getElementById("salah-audio");
+
+function startQuiz() {
+  const nameInput = document.getElementById("nameInput");
+  if (!nameInput.value.trim()) {
+    alert("Silakan isi nama terlebih dahulu!");
+    return;
+  }
+  userName = nameInput.value.trim();
+  showQuestion();
+}
+
+function showQuestion() {
+  const card = document.getElementById("card");
+  card.innerHTML = `
+    <h2>${userName}, pertanyaan untukmu:</h2>
+    <div id="timer">Waktu: ${timeLeft} detik</div>
+    <h3 id="question">${questions[currentQuestion].question}</h3>
+    <input type="text" id="answer" placeholder="Tulis jawabanmu di sini" />
+    <br>
+    <button onclick="checkAnswer()">Cek Jawaban</button>
+    <div id="result"></div>
+  `;
+  resetTimer();
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timeLeft = 15;
+  document.getElementById("timer").textContent = `Waktu: ${timeLeft} detik`;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer").textContent = `Waktu: ${timeLeft} detik`;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      autoNext();
+    }
+  }, 1000);
+}
+
+function checkAnswer() {
+  const userAnswer = document.getElementById("answer").value.trim();
+  const result = document.getElementById("result");
+
+  if (userAnswer.toLowerCase() === questions[currentQuestion].answer.toLowerCase()) {
+    score++;
+    result.textContent = "Benar! 🎉";
+    result.style.color = "green";
+    benarAudio.play();
+    clearInterval(timerInterval);
+    setTimeout(nextQuestion, 1000);
+  } else {
+    result.innerHTML = "Salah ❌<br>Jawaban yang benar: <strong>" + questions[currentQuestion].answer + "</strong>";
+    result.style.color = "red";
+    salahAudio.play();
+  }
+}
+
+function autoNext() {
+  document.getElementById("result").textContent = "Waktu habis! ⏰";
+  document.getElementById("result").style.color = "orange";
+  setTimeout(nextQuestion, 1000);
+}
+
+function nextQuestion() {
+  currentQuestion++;
+  if (currentQuestion < questions.length) {
+    showQuestion();
+  } else {
+    endQuiz();
+  }
+}
+
+function endQuiz() {
+  document.getElementById("card").innerHTML = `<h2>Terima kasih, ${userName}!</h2><p>Skor akhir kamu: ${score} dari ${questions.length} 🎉</p>`;
+}
+</script>
+
+</body>
+</html>
